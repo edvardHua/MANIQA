@@ -36,25 +36,28 @@ class TABlock(nn.Module):
 class SaveOutput:
     def __init__(self):
         self.outputs = []
-    
+
     def __call__(self, module, module_in, module_out):
         self.outputs.append(module_out)
-    
+
     def clear(self):
         self.outputs = []
 
 
 class MANIQA(nn.Module):
-    def __init__(self, embed_dim=72, num_outputs=1, patch_size=8, drop=0.1, 
-                    depths=[2, 2], window_size=4, dim_mlp=768, num_heads=[4, 4],
-                    img_size=224, num_tab=2, scale=0.8, **kwargs):
+    def __init__(self, embed_dim=72, num_outputs=1, patch_size=8, drop=0.1,
+                 depths=[2, 2], window_size=4, dim_mlp=768, num_heads=[4, 4],
+                 img_size=224, num_tab=2, scale=0.8, **kwargs):
         super().__init__()
         self.img_size = img_size
         self.patch_size = patch_size
         self.input_size = img_size // patch_size
         self.patches_resolution = (img_size // patch_size, img_size // patch_size)
-        
-        self.vit = timm.create_model('vit_base_patch8_224', pretrained=True)
+
+        if img_size == 224:
+            self.vit = timm.create_model('vit_base_patch8_224', pretrained=True)
+        elif img_size == 384:
+            self.vit = timm.create_model("vit_base_patch16_384", pretrained=True)
         self.save_output = SaveOutput()
         hook_handles = []
         for layer in self.vit.modules():
@@ -93,7 +96,7 @@ class MANIQA(nn.Module):
             dim_mlp=dim_mlp,
             scale=scale
         )
-        
+
         self.fc_score = nn.Sequential(
             nn.Linear(embed_dim // 2, embed_dim // 2),
             nn.ReLU(),
@@ -108,7 +111,7 @@ class MANIQA(nn.Module):
             nn.Linear(embed_dim // 2, num_outputs),
             nn.Sigmoid()
         )
-    
+
     def extract_feature(self, save_output):
         x6 = save_output.outputs[6][:, 1:]
         x7 = save_output.outputs[7][:, 1:]
