@@ -42,7 +42,8 @@ This repository is the official PyTorch implementation of MANIQA: Multi-dimensio
 
 ## Change log
 
-Provide the script validate_pr.py for calculating the Precision & Recall of binary classification task.
+* validate_pr.py for calculating the Precision & Recall of binary classification task.
+* inference_edz.py for calculating the score of image and put them in different folders with threshold. 
 
 ## Network Architecture
 ![image.png](image/pipeline.png)
